@@ -2,6 +2,8 @@ package framework
 
 import (
 	"container/list"
+	"src/src/client"
+	"src/src/task"
 	"sync"
 	"time"
 )
@@ -9,7 +11,7 @@ import (
 var taskList = list.New()
 var taskLock sync.Mutex
 
-func GetTask() (Task, bool) {
+func GetTask() (task.Task, bool) {
 	taskLock.Lock()
 	defer taskLock.Unlock()
 	if taskList.Len() == 0 {
@@ -18,7 +20,7 @@ func GetTask() (Task, bool) {
 
 	element := taskList.Front()
 
-	result, ok := element.Value.(Task)
+	result, ok := element.Value.(task.Task)
 
 	if !ok {
 		return nil, false
@@ -29,7 +31,7 @@ func GetTask() (Task, bool) {
 	return result, true
 }
 
-func CreateNewTask(task Task) bool {
+func CreateNewTask(task task.Task) bool {
 	taskLock.Lock()
 	defer taskLock.Unlock()
 	taskList.PushBack(task)
@@ -42,9 +44,9 @@ func Start(stopCh <-chan bool) {
 		case <-stopCh:
 			return
 		default:
-			task, ok := GetTask()
+			task, ok := client.GetTaskFromServer()
 			if !ok {
-				time.Sleep(time.Duration(5) * time.Second)
+				time.Sleep(time.Duration(1) * time.Second)
 			} else {
 				task.Run()
 			}
