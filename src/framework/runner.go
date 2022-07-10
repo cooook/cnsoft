@@ -2,7 +2,6 @@ package framework
 
 import (
 	"container/list"
-	"src/src/client"
 	"src/src/task"
 	"src/src/utils"
 	"sync"
@@ -53,16 +52,28 @@ func CreateOriginTask(tsk task.Task) int64 {
 	}
 	oTask := task.NewOriginTask(tsk, originSize)
 	originTask = append(originTask, oTask)
-	
+
 	taskPoll := tsk.Split(utils.GetServerNum())
 	for _, t := range taskPoll {
 		t.SetTaskID(originSize)
 		createNewTask(t)
 		oTask.WG.Add(1)
 	}
-	
+
+	go func() {
+		oTask.WG.Wait()
+		oTask.Task.AllDoneCallBack()
+	}()
+
 	originSize += 1
 	return originSize - 1
+}
+
+func End(taskID int64) {
+	originLock.Lock()
+	defer originLock.Unlock()
+	oTask := originTask[taskID]
+	oTask.WG.Done()
 }
 
 func Start(stopCh <-chan bool) {
@@ -71,11 +82,14 @@ func Start(stopCh <-chan bool) {
 		case <-stopCh:
 			return
 		default:
-			task, ok := client.GetTaskFromServer()
+			tsk, ok := task.GetTaskFromServer()
+			// fmt.Println(task)
 			if !ok {
 				time.Sleep(time.Duration(1) * time.Second)
 			} else {
-				task.Run()
+				tsk.Initial()
+				tsk.Run()
+				tsk.MergeAnwer()
 			}
 		}
 	}

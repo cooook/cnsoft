@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"src/src/client"
 	"src/src/framework"
 	"src/src/server"
 	"src/src/task"
@@ -16,16 +15,19 @@ func handlerUserInput() {
 	for {
 		fmt.Scan(&command)
 		if strings.EqualFold(command, "load") {
-			ok := client.CreateTaskToServer(task.NewLoadTask("../test/part.bin", "../test/lineitem.bin", 1, 5000001), task.Load_task)
+			ok := task.CreateTaskToServer(task.NewLoadTask("../test/part.bin", "../test/lineitem.bin", 1, 59986052), task.Load_task)
 			if !ok {
 				log.Fatal("Create Load Task Error!")
 			}
-			// server.
 		} else if strings.EqualFold(command, "select") {
-			fmt.Print("Select\n")
-			// framework.CreateNewTask()
+			if !task.LoadDone {
+				fmt.Println("Not load over yet, plz wait...")
+			} else {
+				task.SyncRequest()
+				task.Result.Print()
+			}
 		} else {
-			fmt.Print("No such command")
+			fmt.Println("No such command")
 		}
 	}
 }
