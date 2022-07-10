@@ -8,7 +8,6 @@ import (
 	"sync"
 )
 
-const ENV_NAME = "CNSOFT_SERVER_NUM"
 const MAX_SERVER_NUM = 64
 
 var lock sync.RWMutex

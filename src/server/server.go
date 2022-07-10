@@ -66,24 +66,7 @@ func getClinetAnswerHandler(w http.ResponseWriter, r *http.Request) {
 
 	result.FromJson(data)
 
-	taskIDtext := r.Header.Get("TaskID")
-	taskID, err := strconv.ParseInt(taskIDtext, 10, 64)
-	if err != nil {
-		panic(err)
-	}
-
-	// RunnerIDtext := r.Header.Get("RunnerID")
-	// runnerID, err := strconv.ParseInt(RunnerIDtext, 10, 64)
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// if taskID == 0 {
-	// 	fmt.Printf("\n\n\n\nReceive from %d:\n", runnerID)
-	// 	fmt.Println(result)
-	// }
-	// fmt.Println("\n\n\nSelf:")
-	// fmt.Println(task.TotalResult.Result)
+	taskID := getHeader(r, "TaskID")
 
 	MergeTypeText := r.Header.Get("Merge-Type")
 	mergeType, err := strconv.ParseInt(MergeTypeText, 10, 64)
@@ -91,10 +74,8 @@ func getClinetAnswerHandler(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	framework.End(taskID)
 	task.TotalResult.Merge(&result, mergeType)
-	// fmt.Print("\n\n\nAfter merge:\n")
-	// fmt.Println(task.TotalResult.Result)
+	framework.End(taskID)
 }
 
 func syncAnswerHandler(w http.ResponseWriter, r *http.Request) {
@@ -106,14 +87,6 @@ func syncAnswerHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-
-	// RunnerIDtext := r.Header.Get("RunnerID")
-	// runnerID, err := strconv.ParseInt(RunnerIDtext, 10, 64)
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// fmt.Println("sync runnerID:", runnerID)
 
 	err = result.FromJson(data)
 	if err != nil {

@@ -83,7 +83,6 @@ func Start(stopCh <-chan bool) {
 			return
 		default:
 			tsk, ok := task.GetTaskFromServer()
-			// fmt.Println(task)
 			if !ok {
 				time.Sleep(time.Duration(1) * time.Second)
 			} else {

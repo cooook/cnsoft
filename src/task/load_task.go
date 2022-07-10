@@ -86,12 +86,13 @@ func (task *LoadTask) AllDoneCallBack() { // only call on master
 		binary.Write(&buffer, binary.LittleEndian, LoadPart[i].Sum)
 		binary.Write(&buffer, binary.LittleEndian, LoadPart[i].Pay)
 	}
-
 	for i := 1; i < utils.GetServerNum(); i += 1 {
+		var tmp_buffer bytes.Buffer
+		tmp_buffer.Write(buffer.Bytes())
 		wg.Add(1)
 		go func(instanceID int) {
 			client := &http.Client{}
-			req, _ := http.NewRequest("POST", utils.GetSlaveURL(utils.Sync_loadPart, instanceID), bytes.NewReader(buffer.Bytes()))
+			req, _ := http.NewRequest("POST", utils.GetSlaveURL(utils.Sync_loadPart, instanceID), bytes.NewReader(tmp_buffer.Bytes()))
 			req.Header.Set("Content-Type", "application/json")
 
 			response, err := client.Do(req)
@@ -233,8 +234,6 @@ func (task *LoadTask) Run() {
 
 	cur = 0
 	n = 0
-
-	fmt.Printf("Start = %d, End = %d\n", task.Start, task.End)
 
 	for i := task.Start; i <= task.End; i++ {
 		if cur == n {

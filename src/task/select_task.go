@@ -2,7 +2,6 @@ package task
 
 import (
 	"encoding/json"
-	"fmt"
 	"src/src/utils"
 )
 
@@ -89,7 +88,6 @@ func (task *SelectTask) Run() {
 		for j := 1; j <= 5; j++ {
 			id := i*10 + j
 			average_sum[id] = float64(1.0 * Result.Result.Answer[id].Sum / Result.Result.Answer[id].Number)
-			fmt.Printf("id = %d, avr = %f\n", id, average_sum[id])
 		}
 	}
 	Result.Lock.RUnlock()
