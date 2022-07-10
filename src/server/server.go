@@ -8,6 +8,7 @@ import (
 	"src/src/framework"
 	"src/src/task"
 	"src/src/utils"
+	"strconv"
 )
 
 const (
@@ -22,6 +23,7 @@ func getTaskHandler(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		http.Error(w, "Can't get task", http.StatusBadRequest)
 	} else {
+		w.Header().Set("Task-Type", strconv.FormatInt(int64(task.GetTaskType()), 10))
 		json_data, err := task.ToJson()
 		if err != nil {
 			http.Error(w, "Can't get task", http.StatusBadRequest)
@@ -32,17 +34,28 @@ func getTaskHandler(w http.ResponseWriter, r *http.Request) {
 
 func createTaskHandler(w http.ResponseWriter, r *http.Request) {
 	// 创建新的任务，提交给master，由master 分割之后再由runner运行
-	var task task.Task // [TODO]
-
+	// var task task.LoadTask // [TODO]
 	// 将请求体中的 JSON 数据解析到结构体中
 	// 发生错误，返回400 错误码
-	json_data, _ := ioutil.ReadAll(r.Body)
+	json_data, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
-	err := task.FromJson(json_data)
+
+	if err != nil {
+		panic(err)
+	}
+	t, err := strconv.ParseInt(r.Header.Get("Task-Type"), 10, 64)
+	if err != nil {
+		panic(err)
+	}
+
+	task := task.GetTypeTask(task.TaskType(t))
+
+	err = task.FromJson(json_data)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
 	framework.CreateOriginTask(task)
 }
 

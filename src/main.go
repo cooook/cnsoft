@@ -16,7 +16,7 @@ func handlerUserInput() {
 	for {
 		fmt.Scan(&command)
 		if strings.EqualFold(command, "load") {
-			ok := client.CreateTaskToServer(task.NewLoadTask("../test/part.bin", "../test/lineitem.bin", 1, 2000001))
+			ok := client.CreateTaskToServer(task.NewLoadTask("../test/part.bin", "../test/lineitem.bin", 1, 5000001), task.Load_task)
 			if !ok {
 				log.Fatal("Create Load Task Error!")
 			}

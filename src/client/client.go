@@ -17,7 +17,7 @@ const (
 	print_answer
 )
 
-func CreateTaskToServer(task task.Task) bool {
+func CreateTaskToServer(task task.Task, t task.TaskType) bool {
 	client := &http.Client{}
 	json_data, err := task.ToJson()
 	if err != nil {
@@ -27,6 +27,7 @@ func CreateTaskToServer(task task.Task) bool {
 
 	req, _ := http.NewRequest("POST", utils.GetServerURL(create_task), bytes.NewBuffer(json_data))
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Task-Type", strconv.FormatInt(int64(t), 10))
 	response, err := client.Do(req)
 
 	if err != nil {
@@ -54,7 +55,12 @@ func GetTaskFromServer() (task.Task, bool) {
 		return nil, false
 	}
 
-	var task task.Task
+	t, err := strconv.ParseInt(response.Header.Get("Task-Type"), 10, 64)
+	if err != nil {
+		panic(err)
+	}
+	task := task.GetTypeTask(task.TaskType(t))
+
 	data, err := ioutil.ReadAll(response.Body)
 	defer response.Body.Close()
 

@@ -7,6 +7,20 @@ import (
 
 var RunnerID int64
 
+const (
+	Load_task = iota
+)
+
+type TaskType int64
+
+func GetTypeTask(t TaskType) Task {
+	switch t {
+	case Load_task:
+		return &LoadTask{}
+	}
+	return nil
+}
+
 type Task interface {
 	Run()
 	Split(Num int) []Task            // split to Num subTask and submit to taskServer
@@ -14,12 +28,12 @@ type Task interface {
 	FromJson(json_data []byte) error // need to add RunnerID to json
 	SetTaskID(ID int64)
 	GetTaskID() int64
+	GetTaskType() TaskType
 }
 
 type OriginTask struct {
 	WG     sync.WaitGroup
 	Task   Task
-	Result Result_t
 	TaskID int64
 }
 
