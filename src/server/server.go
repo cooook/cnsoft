@@ -36,14 +36,14 @@ func createTaskHandler(w http.ResponseWriter, r *http.Request) {
 
 	// 将请求体中的 JSON 数据解析到结构体中
 	// 发生错误，返回400 错误码
-	defer r.Body.Close()
 	json_data, _ := ioutil.ReadAll(r.Body)
+	defer r.Body.Close()
 	err := task.FromJson(json_data)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	task.Split(utils.GetServerNum())
+	framework.CreateOriginTask(task)
 }
 
 func getClinetAnswerHandler(w http.ResponseWriter, r *http.Request) {
@@ -81,7 +81,7 @@ func startMaster(port int64) {
 	http.HandleFunc(utils.GetHandlerString(get_task), getTaskHandler)
 	http.HandleFunc(utils.GetHandlerString(create_task), createTaskHandler)
 	http.HandleFunc(utils.GetHandlerString(post_answer), getClinetAnswerHandler)
-	err := http.ListenAndServe(":9000", nil)
+	err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
 	if err != nil {
 		log.Fatal("StartTaskServer: ", err)
 	}

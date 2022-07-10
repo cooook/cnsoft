@@ -1,7 +1,8 @@
-package task
+package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"sync"
 )
 
@@ -9,38 +10,21 @@ var RunnerID int64
 
 type Task interface {
 	Run()
-	Split(Num int) []Task            // split to Num subTask and submit to taskServer
+	Split(Num int)                   // split to Num subTask and submit to taskServer
 	ToJson() ([]byte, error)         // need to add RunnerID to json
 	FromJson(json_data []byte) error // need to add RunnerID to json
-	SetTaskID(ID int64)
-	GetTaskID() int64
-}
-
-type OriginTask struct {
-	WG     sync.WaitGroup
-	Task   Task
-	Result Result_t
-	TaskID int64
-}
-
-func NewOriginTask(task Task, TaskID int64) *OriginTask {
-	return &OriginTask{Task: task, TaskID: TaskID}
 }
 
 type Brand struct {
 	pay         float64 //总销售额
-	number      int64   //零件个数
-	sum         int64   //销售量
-	notgood_sum int64   //非畅销销售量
+	number      int     //零件个数
+	sum         int     //销售量
+	notgood_sum int     //非畅销销售量
 	notgood_pay float64 //非畅销销售额
 }
 
 type BasicResult struct {
-	Answer      [60]Brand
-	All_sum     int64
-	Notgood_sum int64
-	All_pay     float64
-	Notgood_pay float64
+	Answer [60]Brand
 }
 
 type Result_t struct {
@@ -75,3 +59,11 @@ func (res *BasicResult) FromJson(data []byte) error {
 }
 
 var Result Result_t
+
+func main() {
+	var result BasicResult
+	result.Answer[0].notgood_pay = 1
+	data, _ := result.ToJson()
+	result.FromJson(data)
+	fmt.Print(result)
+}

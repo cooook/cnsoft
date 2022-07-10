@@ -4,12 +4,19 @@ import (
 	"container/list"
 	"src/src/client"
 	"src/src/task"
+	"src/src/utils"
 	"sync"
 	"time"
 )
 
 var taskList = list.New()
 var taskLock sync.Mutex
+
+const MAX_ORIGIN_TASK = 10
+
+var originTask = make([]*task.OriginTask, 0, MAX_ORIGIN_TASK)
+var originLock sync.Mutex
+var originSize int64 = 0
 
 func GetTask() (task.Task, bool) {
 	taskLock.Lock()
@@ -31,11 +38,31 @@ func GetTask() (task.Task, bool) {
 	return result, true
 }
 
-func CreateNewTask(task task.Task) bool {
+func createNewTask(task task.Task) bool {
 	taskLock.Lock()
 	defer taskLock.Unlock()
 	taskList.PushBack(task)
 	return true
+}
+
+func CreateOriginTask(tsk task.Task) int64 {
+	originLock.Lock()
+	defer originLock.Unlock()
+	if originSize == MAX_ORIGIN_TASK {
+		return -1
+	}
+	oTask := task.NewOriginTask(tsk, originSize)
+	originTask = append(originTask, oTask)
+	
+	taskPoll := tsk.Split(utils.GetServerNum())
+	for _, t := range taskPoll {
+		t.SetTaskID(originSize)
+		createNewTask(t)
+		oTask.WG.Add(1)
+	}
+	
+	originSize += 1
+	return originSize - 1
 }
 
 func Start(stopCh <-chan bool) {

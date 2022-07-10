@@ -2,8 +2,11 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"src/src/client"
 	"src/src/framework"
 	"src/src/server"
+	"src/src/task"
 	"strings"
 )
 
@@ -13,7 +16,10 @@ func handlerUserInput() {
 	for {
 		fmt.Scan(&command)
 		if strings.EqualFold(command, "load") {
-			fmt.Print("LOAD\n")
+			ok := client.CreateTaskToServer(task.NewLoadTask("../test/part.bin", "../test/lineitem.bin", 1, 2000001))
+			if !ok {
+				log.Fatal("Create Load Task Error!")
+			}
 			// server.
 		} else if strings.EqualFold(command, "select") {
 			fmt.Print("Select\n")
